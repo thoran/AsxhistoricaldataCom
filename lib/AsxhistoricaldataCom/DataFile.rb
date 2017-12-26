@@ -1,8 +1,8 @@
 # AsxhistoricaldataCom/DataFle.rb
 # AsxhistoricaldataCom::DataFle
 
-# 20171225, 26
-# 0.6.1
+# 20171226
+# 0.6.2
 
 require 'Date/betweenQ'
 require 'HTTP/get'
@@ -104,6 +104,16 @@ module AsxhistoricaldataCom
           month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(month.downcase)&.+(1) ||
             Month::Constants::MONTH_NAMES_SHORT.collect{|m| m.downcase}.index(month.downcase)&.+(1)
         end
+        matching_year_and_month_multi_year?(url: url, year: year, month: month) ||
+          matching_year_and_month_multi_month?(url: url, year: year, month: month) ||
+            matching_year_and_month_weekly?(url: url, year: year, month: month)
+      end
+
+      def matching_year_and_month_multi_year?(url:, year:, month:)
+        if month.to_s.match(/\D/)
+          month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(month.downcase)&.+(1) ||
+            Month::Constants::MONTH_NAMES_SHORT.collect{|m| m.downcase}.index(month.downcase)&.+(1)
+        end
         start_year, finish_year = [url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.first.to_i, url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.last.to_i]
         if start_year && finish_year
           comparison_date = Date.new(year, month, 1)
@@ -111,7 +121,10 @@ module AsxhistoricaldataCom
           finish_date = Date.new(finish_year, 12, 31)
           return true if comparison_date.between?(start_date, finish_date)
         end
+        false
+      end
 
+      def matching_year_and_month_multi_month?(url:, year:, month:)
         comparison_year, comparison_month_start, comparison_month_finish = url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten
         if comparison_year && comparison_month_start && comparison_month_finish
           comparison_year = comparison_year.to_i
@@ -125,7 +138,10 @@ module AsxhistoricaldataCom
           finish_date = Date.new(year, finish_month, Month.new(finish_month).days)
           return true if comparison_date.between?(start_date, finish_date)
         end
+        false
+      end
 
+      def matching_year_and_month_weekly?(url:, year:, month:)
         comparison_year, comparison_month = url.scan(/week(\d\d\d\d)(\d\d)/).flatten
         if comparison_year && comparison_month
           comparison_year = comparison_year.to_i
