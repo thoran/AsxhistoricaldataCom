@@ -1,8 +1,8 @@
 # AsxhistoricaldataCom/DataFle.rb
 # AsxhistoricaldataCom::DataFle
 
-# 20171212
-# 0.6.0
+# 20171225, 26
+# 0.6.1
 
 require 'Date/betweenQ'
 require 'HTTP/get'
@@ -25,8 +25,6 @@ module AsxhistoricaldataCom
         if year || month
           return_urls = (
             return_urls.select do |url|
-              puts
-              p matching_url?(url: url, year: year, month: month)
               matching_url?(url: url, year: year, month: month)
             end
           )
@@ -102,6 +100,10 @@ module AsxhistoricaldataCom
       end
 
       def matching_year_and_month?(url:, year:, month:)
+        if month.to_s.match(/\D/)
+          month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(month.downcase)&.+(1) ||
+            Month::Constants::MONTH_NAMES_SHORT.collect{|m| m.downcase}.index(month.downcase)&.+(1)
+        end
         start_year, finish_year = [url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.first.to_i, url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.last.to_i]
         if start_year && finish_year
           comparison_date = Date.new(year, month, 1)
@@ -111,8 +113,8 @@ module AsxhistoricaldataCom
         end
 
         comparison_year, comparison_month_start, comparison_month_finish = url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten
-        comparison_year = comparison_year.to_i
         if comparison_year && comparison_month_start && comparison_month_finish
+          comparison_year = comparison_year.to_i
           return false unless comparison_year == year
           comparison_date = Date.new(year, month, 1)
           start_month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(comparison_month_start.downcase)&.+(1) ||
@@ -126,10 +128,9 @@ module AsxhistoricaldataCom
 
         comparison_year, comparison_month = url.scan(/week(\d\d\d\d)(\d\d)/).flatten
         if comparison_year && comparison_month
-          p comparison_year = comparison_year.to_i
-          p comparison_month = comparison_month.to_i
-          return false unless comparison_year == year && comparison_month == month
-          true
+          comparison_year = comparison_year.to_i
+          comparison_month = comparison_month.to_i
+          return true if comparison_year == year && comparison_month == month
         end
         false
       end

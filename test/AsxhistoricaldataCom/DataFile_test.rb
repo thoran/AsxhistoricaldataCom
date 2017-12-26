@@ -64,7 +64,7 @@ describe AsxhistoricaldataCom::DataFile do
   end
 
   describe ".urls" do
-    context "Year only" do
+    context "Year only for this year" do
       let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year)}
 
       it "matches at least one file" do
@@ -74,7 +74,7 @@ describe AsxhistoricaldataCom::DataFile do
       end
     end
 
-    context "Year only matching multi-year file" do
+    context "Year only for 2010" do
       let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: 2010)}
 
       it "matches at least one file" do
@@ -86,19 +86,32 @@ describe AsxhistoricaldataCom::DataFile do
       end
     end
 
-    # context "Year and numeric month" do
-    #   let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year, month: last_month_numeric)}
+    context "Year and numeric month for last month" do
+      let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year, month: last_month_numeric)}
 
-    #   it "matches at least one file" do
-    #     data_file_urls.wont_be_empty
-    #   end
+      it "matches at least one file" do
+        data_file_urls.wont_be_empty
+      end
 
-    #   it "matches at least one file" do
-    #     data_file_urls.first.must_match "#{this_year}#{'%02d' % last_month_numeric}"
-    #   end
-    # end
+      it "matches at least one file" do
+        data_file_urls.first.must_match "#{this_year}#{'%02d' % last_month_numeric}"
+      end
+    end
 
-    context "Year and numeric month matching multi-year file" do
+    context "Year and numeric month for January this year" do
+      let(:month){Month.new(1)}
+      let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year, month: month.to_i)}
+
+      it "matches at least one file" do
+        data_file_urls.wont_be_empty
+      end
+
+      it "matches at least one file" do
+        data_file_urls.first.must_match "#{this_year}#{month.to_short.downcase}"
+      end
+    end
+
+    context "Year 2010 and numeric month" do
       let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: 2010, month: last_month_numeric)}
 
       it "matches at least one file" do
@@ -110,20 +123,32 @@ describe AsxhistoricaldataCom::DataFile do
       end
     end
 
-    # context "Year and long month" do
-    #   let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year, month: last_month_long)}
+    context "Year and long month for last month" do
+      let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year, month: last_month_long)}
 
-    #   it "matches at least one file" do
-    #     data_file_urls.wont_be_empty
-    #   end
+      it "matches at least one file" do
+        data_file_urls.wont_be_empty
+      end
 
-    #   it "matches at least one file" do
-    #     p data_file_urls
-    #     data_file_urls.first.must_match "#{this_year}#{'%02d' % last_month_numeric}"
-    #   end
-    # end
+      it "matches at least one file" do
+        data_file_urls.first.must_match "#{this_year}#{'%02d' % last_month_numeric}"
+      end
+    end
 
-    context "Year and long month matching multi-year file" do
+    context "Year and long month for January this year" do
+      let(:month){Month.new(1)}
+      let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: this_year, month: month.to_i)}
+
+      it "matches at least one file" do
+        data_file_urls.wont_be_empty
+      end
+
+      it "matches at least one file" do
+        data_file_urls.first.must_match "#{this_year}#{month.to_short.downcase}"
+      end
+    end
+
+    context "Year 2010 and long month" do
       let(:data_file_urls){AsxhistoricaldataCom::DataFile.urls(year: 2010, month: last_month_long)}
 
       it "matches at least one file" do
@@ -134,7 +159,6 @@ describe AsxhistoricaldataCom::DataFile do
         data_file_urls.must_equal(['https://www.asxhistoricaldata.com/data/2007-2012.zip'])
       end
     end
-
   end
 
   describe ".all_urls" do
