@@ -1,9 +1,6 @@
 # AsxhistoricaldataCom/DataFle.rb
 # AsxhistoricaldataCom::DataFle
 
-# 20171226
-# 0.6.2
-
 require 'Date/betweenQ'
 require 'HTTP/get'
 require 'nokogiri'

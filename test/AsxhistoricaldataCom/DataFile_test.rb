@@ -5,7 +5,7 @@ require 'ostruct'
 require 'mocha/mini_test'
 require 'webmock/minitest'
 
-require 'AsxhistoricaldataCom/DataFile'
+require 'AsxhistoricaldataCom'
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
@@ -169,6 +169,14 @@ describe AsxhistoricaldataCom::DataFile do
     end
   end
 
+  describe ".urls_on_archive_page" do
+    let(:data_file_urls){AsxhistoricaldataCom::DataFile.send(:urls_on_archive_page)}
+
+    it "includes the 1997 to 2006 zip file" do
+      data_file_urls.must_include 'https://www.asxhistoricaldata.com/data/1997-2006.zip'
+    end
+  end
+
   describe ".urls_on_home_page" do
     let(:data_file_urls){AsxhistoricaldataCom::DataFile.send(:urls_on_home_page)}
 
@@ -177,11 +185,29 @@ describe AsxhistoricaldataCom::DataFile do
     end
   end
 
-  describe ".urls_on_archive_page" do
-    let(:data_file_urls){AsxhistoricaldataCom::DataFile.send(:urls_on_archive_page)}
+  describe ".multi_year_zip_files" do
+    let(:data_file_urls){AsxhistoricaldataCom::DataFile.send(:multi_year_zip_files)}
 
     it "includes the 1997 to 2006 zip file" do
       data_file_urls.must_include 'https://www.asxhistoricaldata.com/data/1997-2006.zip'
+    end
+  end
+
+  describe ".multi_month_zip_files" do
+    let(:data_file_urls){AsxhistoricaldataCom::DataFile.send(:multi_month_zip_files)}
+
+    it "includes the January to June zip file" do
+      data_file_urls.must_include 'https://www.asxhistoricaldata.com/data/2017jan-june.zip'
+    end
+  end
+
+  describe ".weekly_zip_files" do
+    let(:data_file_urls){AsxhistoricaldataCom::DataFile.send(:weekly_zip_files)}
+
+    it "includes the weekly zip files" do
+      data_file_urls.each do |data_file_url|
+        data_file_url.must_match /week#{this_year}/
+      end
     end
   end
 
