@@ -1,8 +1,8 @@
-# AsxhistoricalDataCom/DataFle.rb
-# AsxhistoricalDataCom::DataFle
+# AsxhistoricaldataCom/DataFle.rb
+# AsxhistoricaldataCom::DataFle
 
-# 20170425
-# 0.3.0
+# 20170911, 14, 17, 27
+# 0.4.0
 
 require 'HTTP/get'
 require 'nokogiri'
@@ -33,8 +33,8 @@ module AsxhistoricaldataCom
 
       private
 
-      def retrieve_urls(archive_page_url)
-        response = HTTP.get(archive_page_url)
+      def retrieve_urls(url)
+        response = HTTP.get(url)
         parsed_response = Nokogiri::HTML(response.body)
         parsed_response.search('a').select{|e| e.attributes['href'].value =~ /\.zip/}.collect{|link| link.attributes['href'].value}
       end
@@ -60,14 +60,39 @@ module AsxhistoricaldataCom
               if month =~ /\d/
                 url =~ /#{year}#{'%02d' % month}#{'%02d' % day}/
               else
-                month_number = '%02d' % (Month::Constants::MONTH_NAMES_LONG.index(month).to_i + 1).to_s
+                month_number = '%02d' % (Month::Constants::MONTH_NAMES_LONG.index(month) + 1).to_s
                 url =~ /#{year}#{month_number}#{'%02d' % day}/
               end
             else
               if month =~ /\d/
-                url =~ /#{Month.new(month.to_i).to_long}-#{year}/i || url =~ /#{year}-#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}/i
+                url =~ /#{Month.new(month.to_i).to_long}-#{year}/i ||
+                url =~ /#{Month.new(month.to_i).to_long}#{year}/i ||
+                url =~ /#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}-#{year}/i ||
+                url =~ /#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}#{year}/i ||
+                url =~ /#{year}-{Month.new(month.to_i).to_long}/i ||
+                url =~ /#{year}{Month.new(month.to_i).to_long}/i ||
+                url =~ /#{year}-#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}/i ||
+                url =~ /#{year}#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}/i ||
+                url =~ /#{year}-{month}/i ||
+                url =~ /#{year}{month}/i ||
+                url =~ /#{month}-{year}/i
+                url =~ /#{month}{year}/i ||
+                url =~ /#{year}-#{'%02d' % month}/i ||
+                url =~ /#{'%02d' % month}-{year}/i
+                url =~ /#{year}#{'%02d' % month}/i ||
+                url =~ /#{'%02d' % month}{year}/i
               else
-                url =~ /#{month.downcase}-#{year}/ || url =~ /#{year}-#{month.downcase}/
+                month_number = '%02d' % (Month::Constants::MONTH_NAMES_LONG.index(month) + 1).to_s
+                url =~ /#{Month::Constants::MONTH_NAMES_LONG.index(month) + 1}-#{year}/i ||
+                url =~ /#{Month::Constants::MONTH_NAMES_LONG.index(month) + 1}#{year}/i ||
+                url =~ /#{month_number}-#{year}/i ||
+                url =~ /#{month_number}#{year}/i ||
+                url =~ /#{year}-#{month_number}/i ||
+                url =~ /#{year}#{month_number}/i ||
+                url =~ /#{month.downcase}-#{year}/i ||
+                url =~ /#{month.downcase}#{year}/i ||
+                url =~ /#{year}-#{month.downcase}/i ||
+                url =~ /#{year}#{month.downcase}/i
               end
             end
           else
@@ -87,33 +112,4 @@ module AsxhistoricaldataCom
     end
 
   end
-end
-
-if __FILE__ == $0
-  data_file_urls = AsxhistoricaldataCom::DataFile.urls(year: 2017)
-  data_file_urls.each do |data_file_url|
-    puts data_file_url
-  end
-  puts
-  data_file_urls = AsxhistoricaldataCom::DataFile.urls(year: 2017, month: 1)
-  data_file_urls.each do |data_file_url|
-    puts data_file_url
-  end
-  puts
-  data_file_urls = AsxhistoricaldataCom::DataFile.urls(year: 2017, month: 'January')
-  data_file_urls.each do |data_file_url|
-    puts data_file_url
-  end
-  puts
-  data_file_urls = AsxhistoricaldataCom::DataFile.urls(year: 2017, month: 4, day: 7)
-  data_file_urls.each do |data_file_url|
-    puts data_file_url
-  end
-  puts
-  data_file_urls = AsxhistoricaldataCom::DataFile.urls(year: 2017, month: 'April', day: 7)
-  data_file_urls.each do |data_file_url|
-    puts data_file_url
-  end
-  p data_files = AsxhistoricaldataCom::DataFile.all(year: 2017)
-  # require 'SimpleCSV.rbd/SimpleCSV'
 end
