@@ -2,7 +2,7 @@
 # AsxhistoricalDataCom::DataFle
 
 # 20170425
-# 0.2.0
+# 0.3.0
 
 require 'HTTP/get'
 require 'nokogiri'
@@ -78,12 +78,12 @@ module AsxhistoricaldataCom
 
     end # class << self
 
-    def initialize(data_file_url)
-      @data_file_url = data_file_url
+    def initialize(url)
+      @url = url
     end
 
     def get
-      HTTP.get(@data_file_url)
+      HTTP.get(@url).body
     end
 
   end
@@ -114,6 +114,6 @@ if __FILE__ == $0
   data_file_urls.each do |data_file_url|
     puts data_file_url
   end
-  # data_files = AsxhistoricaldataCom::DataFile.all
+  p data_files = AsxhistoricaldataCom::DataFile.all(year: 2017)
   # require 'SimpleCSV.rbd/SimpleCSV'
 end
