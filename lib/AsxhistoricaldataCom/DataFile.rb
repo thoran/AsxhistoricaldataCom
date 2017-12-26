@@ -1,9 +1,10 @@
 # AsxhistoricaldataCom/DataFle.rb
 # AsxhistoricaldataCom::DataFle
 
-# 20171001
-# 0.5.0
+# 20171212
+# 0.6.0
 
+require 'Date/betweenQ'
 require 'HTTP/get'
 require 'nokogiri'
 require 'Month.rbd/Month'
@@ -24,6 +25,8 @@ module AsxhistoricaldataCom
         if year || month
           return_urls = (
             return_urls.select do |url|
+              puts
+              p matching_url?(url: url, year: year, month: month)
               matching_url?(url: url, year: year, month: month)
             end
           )
@@ -51,45 +54,84 @@ module AsxhistoricaldataCom
         retrieve_urls('http://www.asxhistoricaldata.com/').uniq
       end
 
+      def multi_year_zip_files
+        all_urls.select do |url|
+          !url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.empty?
+        end
+      end
+
+      def multi_month_zip_files
+        all_urls.select do |url|
+          !url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten.empty?
+        end
+      end
+
+      def weekly_zip_files
+        all_urls.select do |url|
+          !url.scan(/week(\d\d\d\d)(\d\d)/).flatten.empty?
+        end
+      end
+
       def matching_url?(url:, year: nil, month: nil)
         if year
-          year = year.to_s
           if month
-            month = month.to_s
-            if month =~ /\d/
-              url =~ /#{Month.new(month.to_i).to_long}-#{year}/i ||
-              url =~ /#{Month.new(month.to_i).to_long}#{year}/i ||
-              url =~ /#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}-#{year}/i ||
-              url =~ /#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}#{year}/i ||
-              url =~ /#{year}-{Month.new(month.to_i).to_long}/i ||
-              url =~ /#{year}{Month.new(month.to_i).to_long}/i ||
-              url =~ /#{year}-#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}/i ||
-              url =~ /#{year}#{Month::Constants::MONTH_NAMES_LONG[month.to_i - 1]}/i ||
-              url =~ /#{year}-{month}/i ||
-              url =~ /#{year}{month}/i ||
-              url =~ /#{month}-{year}/i ||
-              url =~ /#{month}{year}/i ||
-              url =~ /#{year}-#{'%02d' % month}/i ||
-              url =~ /#{'%02d' % month}-{year}/i ||
-              url =~ /#{year}#{'%02d' % month}/i ||
-              url =~ /#{'%02d' % month}{year}/i
-            else
-              month_number = '%02d' % (Month::Constants::MONTH_NAMES_LONG.index(month) + 1).to_s
-              url =~ /#{Month::Constants::MONTH_NAMES_LONG.index(month) + 1}-#{year}/i ||
-              url =~ /#{Month::Constants::MONTH_NAMES_LONG.index(month) + 1}#{year}/i ||
-              url =~ /#{month_number}-#{year}/i ||
-              url =~ /#{month_number}#{year}/i ||
-              url =~ /#{year}-#{month_number}/i ||
-              url =~ /#{year}#{month_number}/i ||
-              url =~ /#{month.downcase}-#{year}/i ||
-              url =~ /#{month.downcase}#{year}/i ||
-              url =~ /#{year}-#{month.downcase}/i ||
-              url =~ /#{year}#{month.downcase}/i
-            end
+            matching_year_and_month?(url: url, year: year, month: month)
           else
-            url =~ /#{year}/
+            matching_year?(url: url, year: year)
           end
+        else
+          true
         end
+      end
+
+      def matching_year?(url:, year:)
+        start_year, finish_year = [url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.first.to_i, url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.last.to_i]
+        if start_year && finish_year
+          comparison_date = Date.new(year, 1, 1)
+          start_date = Date.new(start_year, 1, 1)
+          finish_date = Date.new(finish_year, 12, 31)
+          return true if comparison_date.between?(start_date, finish_date)
+        end
+        if comparison_year = url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten.first
+          return true if comparison_year.to_i == year.to_i
+        end
+        if comparison_year = url.scan(/week(\d\d\d\d)(\d\d)/).flatten.first
+          return true if comparison_year.to_i == year.to_i
+        end
+        false
+      end
+
+      def matching_year_and_month?(url:, year:, month:)
+        start_year, finish_year = [url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.first.to_i, url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.last.to_i]
+        if start_year && finish_year
+          comparison_date = Date.new(year, month, 1)
+          start_date = Date.new(start_year, 1, 1)
+          finish_date = Date.new(finish_year, 12, 31)
+          return true if comparison_date.between?(start_date, finish_date)
+        end
+
+        comparison_year, comparison_month_start, comparison_month_finish = url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten
+        comparison_year = comparison_year.to_i
+        if comparison_year && comparison_month_start && comparison_month_finish
+          return false unless comparison_year == year
+          comparison_date = Date.new(year, month, 1)
+          start_month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(comparison_month_start.downcase)&.+(1) ||
+            Month::Constants::MONTH_NAMES_SHORT.collect{|m| m.downcase}.index(comparison_month_start.downcase)&.+(1)
+          finish_month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(comparison_month_finish.downcase)&.+(1) ||
+            Month::Constants::MONTH_NAMES_SHORT.collect{|m| m.downcase}.index(comparison_month_finish.downcase)&.+(1)
+          start_date = Date.new(year, start_month, 1)
+          finish_date = Date.new(year, finish_month, Month.new(finish_month).days)
+          return true if comparison_date.between?(start_date, finish_date)
+        end
+
+        comparison_year, comparison_month = url.scan(/week(\d\d\d\d)(\d\d)/).flatten
+        if comparison_year && comparison_month
+          p comparison_year = comparison_year.to_i
+          p comparison_month = comparison_month.to_i
+          return false unless comparison_year == year && comparison_month == month
+          true
+        end
+        false
       end
 
     end # class << self
