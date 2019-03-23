@@ -20,7 +20,7 @@ describe AsxhistoricaldataCom::DataFile do
   let(:last_month_numeric){last_month.to_num}
   let(:last_month_long){last_month.to_long}
   let(:return_object){OpenStruct.new(body: nil)}
-  let(:this_year){Date.today.year}
+  let(:this_year){2017}
 
   let(:root_body) do
     root_filename = File.expand_path('../../fixtures/root.html', __FILE__)
@@ -32,10 +32,10 @@ describe AsxhistoricaldataCom::DataFile do
   end
 
   before do
-    stub_request(:get, 'http://www.asxhistoricaldata.com/').
+    stub_request(:get, 'https://www.asxhistoricaldata.com/').
       with(headers: {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Ruby'}).
         to_return(status: 200, body: root_body)
-    stub_request(:get, 'http://www.asxhistoricaldata.com/archive/').
+    stub_request(:get, 'https://www.asxhistoricaldata.com/archive/').
       with(headers: {'Accept'=>'*/*', 'Accept-Encoding'=>'gzip;q=1.0,deflate;q=0.6,identity;q=0.3', 'User-Agent'=>'Ruby'}).
         to_return(status: 200, body: archive_body)
   end
@@ -94,7 +94,7 @@ describe AsxhistoricaldataCom::DataFile do
       end
 
       it "matches at least one file" do
-        data_file_urls.first.must_match "#{this_year}#{'%02d' % last_month_numeric}"
+        data_file_urls.first.must_match "#{this_year}jan-june"
       end
     end
 
@@ -131,7 +131,7 @@ describe AsxhistoricaldataCom::DataFile do
       end
 
       it "matches at least one file" do
-        data_file_urls.first.must_match "#{this_year}#{'%02d' % last_month_numeric}"
+        data_file_urls.first.must_match "#{this_year}jan-june"
       end
     end
 
