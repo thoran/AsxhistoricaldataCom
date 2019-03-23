@@ -42,11 +42,11 @@ module AsxhistoricaldataCom
       end
 
       def urls_on_archive_page
-        retrieve_urls('http://www.asxhistoricaldata.com/archive/').uniq
+        retrieve_urls('https://www.asxhistoricaldata.com/archive/').uniq
       end
 
       def urls_on_home_page
-        retrieve_urls('http://www.asxhistoricaldata.com/').uniq
+        retrieve_urls('https://www.asxhistoricaldata.com/').uniq
       end
 
       def multi_year_zip_files
