@@ -57,7 +57,13 @@ module AsxhistoricaldataCom
 
       def multi_month_zip_files
         all_urls.select do |url|
-          !url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten.empty?
+          !url.scan(/(\d\d\d\d)([a-z]+)-([a-z]+)/).flatten.empty?
+        end
+      end
+
+      def single_month_zip_files
+        all_urls.select do |url|
+          !url.scan(/(\d\d\d\d)([a-z]+)(\.+)/).flatten.empty?
         end
       end
 
@@ -109,7 +115,8 @@ module AsxhistoricaldataCom
         end
         matching_year_and_month_multi_year?(url: url, year: year, month: month) ||
           matching_year_and_month_multi_month?(url: url, year: year, month: month) ||
-            matching_year_and_month_weekly?(url: url, year: year, month: month)
+            matching_year_and_month_weekly?(url: url, year: year, month: month) ||
+              matching_year_and_single_month?(url: url, year: year, month: month)
       end
 
       def matching_year_and_month_multi_year?(url:, year:, month:)
@@ -149,6 +156,17 @@ module AsxhistoricaldataCom
         if comparison_year && comparison_month
           comparison_year = comparison_year.to_i
           comparison_month = comparison_month.to_i
+          return true if comparison_year == year && comparison_month == month
+        end
+        false
+      end
+
+      def matching_year_and_single_month?(url:, year:, month:)
+        comparison_year, comparison_month = url.scan(/(\d\d\d\d)([a-z]+)/).flatten
+        if comparison_year && comparison_month
+          comparison_year = comparison_year.to_i
+          comparison_month = Month::Constants::MONTH_NAMES_LONG.collect{|m| m.downcase}.index(comparison_month.downcase)&.+(1) ||
+            Month::Constants::MONTH_NAMES_SHORT.collect{|m| m.downcase}.index(comparison_month.downcase)&.+(1)
           return true if comparison_year == year && comparison_month == month
         end
         false
