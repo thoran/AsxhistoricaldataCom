@@ -80,12 +80,18 @@ module AsxhistoricaldataCom
       end
 
       def matching_year?(url:, year:)
-        start_year, finish_year = [url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.first.to_i, url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.last.to_i]
-        if start_year && finish_year
-          comparison_date = Date.new(year, 1, 1)
-          start_date = Date.new(start_year, 1, 1)
-          finish_date = Date.new(finish_year, 12, 31)
-          return true if comparison_date.between?(start_date, finish_date)
+        scan_result = url.scan(/(\d\d\d\d)-(\d\d\d\d)/)
+        if !scan_result.flatten.first.nil? && !scan_result.flatten.last.nil?
+          start_year, finish_year = [url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.first.to_i, url.scan(/(\d\d\d\d)-(\d\d\d\d)/).flatten.last.to_i]
+          if start_year && finish_year
+            comparison_date = Date.new(year, 1, 1)
+            start_date = Date.new(start_year, 1, 1)
+            finish_date = Date.new(finish_year, 12, 31)
+            return true if comparison_date.between?(start_date, finish_date)
+          end
+        end
+        if comparison_year = url.scan(/(\d\d\d\d)([a-z]{3,4})/).flatten.first
+          return true if comparison_year.to_i == year.to_i
         end
         if comparison_year = url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten.first
           return true if comparison_year.to_i == year.to_i
