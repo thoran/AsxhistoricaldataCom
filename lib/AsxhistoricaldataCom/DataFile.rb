@@ -122,7 +122,7 @@ module AsxhistoricaldataCom
       end
 
       def matching_year_and_month_multi_month?(url:, year:, month:)
-        comparison_year, comparison_month_start, comparison_month_finish = url.scan(/(\d\d\d\d)([a-z]{3,4})-([a-z]{3,4})/).flatten
+        comparison_year, comparison_month_start, comparison_month_finish = url.scan(/(\d\d\d\d)([a-z]+)-([a-z]+)/).flatten
         if comparison_year && comparison_month_start && comparison_month_finish
           comparison_year = comparison_year.to_i
           return false unless comparison_year == year
