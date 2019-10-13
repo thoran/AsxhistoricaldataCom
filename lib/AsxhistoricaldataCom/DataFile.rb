@@ -11,9 +11,13 @@ module AsxhistoricaldataCom
 
     class << self
 
+      def retrieve_all
+        all.collect{|data_file| datafile.get; datafile}
+      end
+
       def all(year: nil, month: nil)
         urls(year: year, month: month).collect do |url|
-          self.new(url).get
+          self.new(url)
         end
       end
 
@@ -174,12 +178,14 @@ module AsxhistoricaldataCom
 
     end # class << self
 
+    attr_accessor :url
+
     def initialize(url)
       @url = url
     end
 
     def get
-      HTTP.get(@url).body
+      @data ||= HTTP.get(@url).body
     end
 
   end
