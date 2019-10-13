@@ -92,10 +92,6 @@ describe AsxhistoricaldataCom::DataFile do
       it "matches at least one file" do
         data_file_urls.wont_be_empty
       end
-
-      it "matches at least one file" do
-        data_file_urls.first.must_match "#{this_year}jan-june"
-      end
     end
 
     context "Year and numeric month for January this year" do
@@ -128,10 +124,6 @@ describe AsxhistoricaldataCom::DataFile do
 
       it "matches at least one file" do
         data_file_urls.wont_be_empty
-      end
-
-      it "matches at least one file" do
-        data_file_urls.first.must_match "#{this_year}jan-june"
       end
     end
 

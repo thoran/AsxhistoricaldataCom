@@ -3,8 +3,8 @@
 
 require 'Date/betweenQ'
 require 'HTTP/get'
+require 'Month'
 require 'nokogiri'
-require 'Month.rbd/Month'
 
 module AsxhistoricaldataCom
   class DataFile
