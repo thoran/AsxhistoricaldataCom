@@ -2,18 +2,60 @@
 # AsxhistoricaldataCom::DataFle
 
 require 'Date/betweenQ'
+require 'File/self.basename_without_extname'
 require 'HTTP/get'
 require 'Month'
 require 'nokogiri'
+require 'fileutils'
+require 'zip'
 
 module AsxhistoricaldataCom
   class DataFile
 
     class << self
 
-      def retrieve_all
-        all.collect{|data_file| datafile.get; datafile}
+      def write_decompressed(path, year: nil, month: nil)
+        FileUtils.mkdir_p(path) unless File.exist?(path)
+        all(year: year, month: month).each do |data_file|
+          Zip::File.open_buffer(data_file.get) do |zip_file|
+            zip_file.each do |entry|
+              next if entry.ftype == :directory || File.basename(entry.name) == '.DS_Store'
+              unzipped_filename = "#{path}/#{File.basename_without_extname(entry.name)}.csv"
+              next if File.exist?(unzipped_filename)
+              entry.extract(unzipped_filename)
+            end
+          end
+        end
       end
+      alias_method :write_all_decompressed, :write_decompressed # Just call with no arguments.
+
+      def write(path, year: nil, month: nil)
+        FileUtils.mkdir_p(path) unless File.exist?(path)
+        all(year: year, month: month).each do |data_file|
+          File.write("#{path}/#{File.basename(data_file.url)}", data_file.get)
+        end
+      end
+      alias_method :write_all, :write # Just call with no arguments.
+
+      def retrieve_decompressed(year: nil, month: nil)
+        all(year: year, month: month).collect do |data_file|
+          Zip::File.open_buffer(data_file.get) do |zip_file|
+            zip_file.each do |entry|
+              next if entry.ftype == :directory || File.basename(entry.name) == '.DS_Store'
+              entry.get_input_stream.read
+            end
+          end
+        end
+      end
+      alias_method :retrieve_all_decompressed, :retrieve_decompressed # Just call with no arguments.
+
+      def retrieve(year: nil, month: nil)
+        all(year: year, month: month).collect do |data_file|
+          data_file.get
+          data_file
+        end
+      end
+      alias_method :retrieve_all, :retrieve # Just call with no arguments.
 
       def all(year: nil, month: nil)
         urls(year: year, month: month).collect do |url|
